@@ -29,6 +29,9 @@ async function initContracts() {
     ethers.utils.parseEther(BET_FEE.toFixed(18)),
   );
   await contract.deployed();
+  const tokenAddress = await contract.paymentToken();
+  const tokenFactory = await ethers.getContractFactory("LotteryToken");
+  token = tokenFactory.attach(tokenAddress);
 }
 
 async function initAccounts() {
@@ -180,11 +183,17 @@ async function displayBalance(index: string) {
 }
 
 async function buyTokens(index: string, amount: string) {
-  // TODO
+  const tx = await contract.connect(accounts[Number(index)]).purchaseTokens({
+    value: ethers.utils.parseEther(amount),
+  });
+  const receipt = await tx.wait();
+  console.log(`Tokens bought (${receipt.transactionHash})\n`);
 }
 
 async function displayTokenBalance(index: string) {
-  // TODO
+  const balanceBN = await token.balanceOf(accounts[Number(index)].address);
+  const balance = ethers.utils.formatEther(balanceBN);
+  console.log(`The account of address ${accounts[Number(index)].address} has ${balance} Token \n`);
 }
 
 async function bet(index: string, amount: string) {
